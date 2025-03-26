@@ -10,7 +10,31 @@ app.use(express.static('public'));
 app.use(express.json());
 
 const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
+const wss = new WebSocket.Server({ 
+    server,
+    verifyClient: (info, cb) => {
+        // Allow all connections in development
+        if (process.env.VERCEL_ENV === 'development') {
+            cb(true);
+            return;
+        }
+        // In production, verify the origin
+        const origin = info.origin || info.req.headers.origin;
+        const allowedOrigins = [
+            'https://shareapp.vercel.app',
+            'https://shareapp-git-main.vercel.app',
+            'https://shareapp-*.vercel.app'
+        ];
+        const isAllowed = allowedOrigins.some(allowed => {
+            if (allowed.includes('*')) {
+                const regex = new RegExp(allowed.replace('*', '.*'));
+                return regex.test(origin);
+            }
+            return origin === allowed;
+        });
+        cb(isAllowed);
+    }
+});
 
 // Store connected peers
 const peers = new Map();

@@ -16,7 +16,8 @@ const CHUNK_SIZE = 16384; // 16KB chunks
 
 // Connect to signaling server
 function connectToSignalingServer() {
-    ws = new WebSocket(`ws://${window.location.host}`);
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    ws = new WebSocket(`${protocol}//${window.location.host}`);
 
     ws.onmessage = async (event) => {
         const data = JSON.parse(event.data);
